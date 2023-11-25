@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // target에는 위도와 경도
     // zoom은 지도의 확대 정도
     target: companyLatLng,
-    zoom: 14.4746,
+    zoom: 15,
   );
 
   @override
@@ -30,13 +30,32 @@ class _HomeScreenState extends State<HomeScreen> {
     // 지도 사용법
     return Scaffold(
       appBar: renderAppbar(),
-      body: const Column(
-        children: [
-          _CustomGoogleMap(
-            initialPostion: initialPostion,
-          ),
-          _ChoolCheckButton(),
-        ],
+      body: FutureBuilder(
+        future: checkPermission(),
+        builder: (
+          BuildContext context,
+          AsyncSnapshot snapshot,
+        ) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+          if (snapshot.data == '위치 권한이 허가되었습니다.') {
+            return const Column(
+              children: [
+                _CustomGoogleMap(
+                  initialPostion: initialPostion,
+                ),
+                _ChoolCheckButton(),
+              ],
+            );
+          } else {
+            return Center(
+              child: Text(snapshot.data),
+            );
+          }
+        },
       ),
     );
   }
@@ -98,7 +117,7 @@ Future<String> checkPermission() async {
     return '앱의 위치 권한을 세팅에서 허용해주세요.';
   }
 
-  return '위치 권한이 허가되었습니다';
+  return '위치 권한이 허가되었습니다.';
 }
 
 class _ChoolCheckButton extends StatelessWidget {
