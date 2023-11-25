@@ -10,6 +10,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // 출석체크를 할 거리를 미터로 둠
+  static const double distance = 150;
   // latitude - 위도 / longitude - 경도
   // LatLng - 위도와 경도를 가지는 클래스, 하나의 클래스로 값을 넣을 수 있음
   // 여의도 회사로 예시
@@ -17,6 +19,23 @@ class _HomeScreenState extends State<HomeScreen> {
     37.5233273,
     126.921252,
   );
+
+  // 회사를 둘러싸는 원
+  static Circle circle = Circle(
+    // 여러개의 원을 구분하는 고유한 값
+    circleId: const CircleId('circle'),
+    center: companyLatLng,
+    // 투명도 줘야 덮지 않음
+    fillColor: Colors.blue.withOpacity(
+      0.5,
+    ),
+    // 반지름은 출석체크를 할 거리를 미터로 둠
+    radius: distance,
+    // 원의 둘레의 색과 두께
+    strokeColor: Colors.blue,
+    strokeWidth: 1,
+  );
+
   // 우주에서 바라보는 시점 == 카메라 포지션
   static const CameraPosition initialPostion = CameraPosition(
     // target에는 위도와 경도
@@ -42,12 +61,13 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
           if (snapshot.data == '위치 권한이 허가되었습니다.') {
-            return const Column(
+            return Column(
               children: [
                 _CustomGoogleMap(
+                  circle: circle,
                   initialPostion: initialPostion,
                 ),
-                _ChoolCheckButton(),
+                const _ChoolCheckButton(),
               ],
             );
           } else {
@@ -75,10 +95,12 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _CustomGoogleMap extends StatelessWidget {
+  final Circle circle;
   final CameraPosition initialPostion;
   const _CustomGoogleMap({
     super.key,
     required this.initialPostion,
+    required this.circle,
   });
 
   @override
@@ -90,6 +112,14 @@ class _CustomGoogleMap extends StatelessWidget {
         initialCameraPosition: initialPostion,
         // 지도의 타입
         mapType: MapType.normal,
+        // 내 위치
+        myLocationEnabled: true,
+        // 직접 만들거라서 false
+        myLocationButtonEnabled: false,
+        // 우리가 정의한 원들(Set이라 circleId가 중복이면 같은 원 취급)
+        circles: {
+          circle,
+        },
       ),
     );
   }
