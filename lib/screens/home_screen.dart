@@ -21,9 +21,11 @@ class _HomeScreenState extends State<HomeScreen> {
   );
 
   // 회사를 둘러싸는 원
-  static Circle circle = Circle(
+  static Circle withinDistanceCircle = Circle(
     // 여러개의 원을 구분하는 고유한 값
-    circleId: const CircleId('circle'),
+    circleId: const CircleId(
+      'withinDistanceCircle',
+    ),
     center: companyLatLng,
     // 투명도 줘야 덮지 않음
     fillColor: Colors.blue.withOpacity(
@@ -34,6 +36,45 @@ class _HomeScreenState extends State<HomeScreen> {
     // 원의 둘레의 색과 두께
     strokeColor: Colors.blue,
     strokeWidth: 1,
+  );
+  static Circle notWithinDistanceCircle = Circle(
+    // 여러개의 원을 구분하는 고유한 값
+    circleId: const CircleId(
+      'notWithinDistanceCircle',
+    ),
+    center: companyLatLng,
+    // 투명도 줘야 덮지 않음
+    fillColor: Colors.red.withOpacity(
+      0.5,
+    ),
+    // 반지름은 출석체크를 할 거리를 미터로 둠
+    radius: distance,
+    // 원의 둘레의 색과 두께
+    strokeColor: Colors.red,
+    strokeWidth: 1,
+  );
+  static Circle checkDoneCircle = Circle(
+    // 여러개의 원을 구분하는 고유한 값
+    circleId: const CircleId(
+      'checkDoneCircle',
+    ),
+    center: companyLatLng,
+    // 투명도 줘야 덮지 않음
+    fillColor: Colors.green.withOpacity(
+      0.5,
+    ),
+    // 반지름은 출석체크를 할 거리를 미터로 둠
+    radius: distance,
+    // 원의 둘레의 색과 두께
+    strokeColor: Colors.green,
+    strokeWidth: 1,
+  );
+  // 마커
+  static Marker marker = const Marker(
+    markerId: MarkerId(
+      'marker',
+    ),
+    position: companyLatLng,
   );
 
   // 우주에서 바라보는 시점 == 카메라 포지션
@@ -64,7 +105,8 @@ class _HomeScreenState extends State<HomeScreen> {
             return Column(
               children: [
                 _CustomGoogleMap(
-                  circle: circle,
+                  circle: withinDistanceCircle,
+                  marker: marker,
                   initialPostion: initialPostion,
                 ),
                 const _ChoolCheckButton(),
@@ -96,11 +138,13 @@ class _HomeScreenState extends State<HomeScreen> {
 
 class _CustomGoogleMap extends StatelessWidget {
   final Circle circle;
+  final Marker marker;
   final CameraPosition initialPostion;
   const _CustomGoogleMap({
     super.key,
     required this.initialPostion,
     required this.circle,
+    required this.marker,
   });
 
   @override
@@ -119,6 +163,10 @@ class _CustomGoogleMap extends StatelessWidget {
         // 우리가 정의한 원들(Set이라 circleId가 중복이면 같은 원 취급)
         circles: {
           circle,
+        },
+        // 마커
+        markers: {
+          marker,
         },
       ),
     );
