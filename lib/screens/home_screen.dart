@@ -126,6 +126,7 @@ class _CustomGoogleMap extends StatelessWidget {
 }
 
 Future<String> checkPermission() async {
+  // 권한 요청의 응답에 따른 각각의 반환값을 지정
   final isLocationEnabled = await Geolocator.isLocationServiceEnabled();
 
   if (!isLocationEnabled) {
