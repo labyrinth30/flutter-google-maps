@@ -10,6 +10,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  bool choolCheckDone = false;
   // 출석체크를 할 거리를 미터로 둠
   static const double okDistance = 150;
   // latitude - 위도 / longitude - 경도
@@ -85,6 +86,41 @@ class _HomeScreenState extends State<HomeScreen> {
     zoom: 15,
   );
 
+  // 출석체크 버튼을 눌렀을 때
+  onChoolCheckButtonPressed() async {
+    final result = await showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('출석체크'),
+          content: const Text('출석체크를 하시겠습니까?'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  withinDistanceCircle = checkDoneCircle;
+                });
+                Navigator.pop(context, true);
+              },
+              child: const Text('확인'),
+            ),
+          ],
+        );
+      },
+    );
+    if (result == true) {
+      setState(() {
+        choolCheckDone = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // 지도 사용법
@@ -127,13 +163,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   return Column(
                     children: [
                       _CustomGoogleMap(
-                        circle: isWithinRange
-                            ? withinDistanceCircle
-                            : notWithinDistanceCircle,
+                        // 삼항 연산자 연달아 사용(지양)
+                        circle: choolCheckDone
+                            ? checkDoneCircle
+                            : isWithinRange
+                                ? withinDistanceCircle
+                                : notWithinDistanceCircle,
                         marker: marker,
                         initialPostion: initialPostion,
                       ),
-                      const _ChoolCheckButton(),
+                      _ChoolCheckButton(
+                        isWithinRange: isWithinRange,
+                        choolChekDone: choolCheckDone,
+                        onPressed: onChoolCheckButtonPressed,
+                      ),
                     ],
                   );
                 });
@@ -225,12 +268,42 @@ Future<String> checkPermission() async {
 }
 
 class _ChoolCheckButton extends StatelessWidget {
-  const _ChoolCheckButton({super.key});
+  final bool isWithinRange;
+  final VoidCallback onPressed;
+  final bool choolChekDone;
+  const _ChoolCheckButton({
+    super.key,
+    required this.isWithinRange,
+    required this.onPressed,
+    required this.choolChekDone,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return const Expanded(
-      child: Text('출근'),
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.timelapse_outlined,
+            size: 50,
+            color: choolChekDone
+                ? Colors.green
+                : isWithinRange
+                    ? Colors.blue
+                    : Colors.red,
+          ),
+          const SizedBox(
+            height: 20,
+          ),
+          // if문으로 바로 밑에 ElevatedButton을 띄울지 말지 결정
+          if (isWithinRange && !choolChekDone)
+            ElevatedButton(
+              onPressed: onPressed,
+              child: const Text('출석체크'),
+            ),
+        ],
+      ),
     );
   }
 }
